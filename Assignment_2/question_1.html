@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+
+            .chart rect {
+                fill: #5780ff;
+                stroke: black;
+                stroke-width: 1;
+            }
+            .chart text {
+                fill: black;
+                font: 10px sans-serif;
+                text-anchor: middle;
+            }
+            .chart .label_text {
+                fill: black;
+                font: 20px sans-serif;
+                text-anchor: middle;
+            }
+
+            .axis text {
+                font: 12px sans-serif;
+            }
+
+            .axis path,
+            .axis line {
+                fill: none;
+                stroke: #000;
+                shape-rendering: crispEdges;
+            }
+
+            .grid .tick {
+                stroke: lightgrey;
+                opacity: 0.7;
+            }
+            .grid path {
+                stroke-width: 0;
+            }
+
+        </style>
+        <script type="text/javascript" src="../d3.min.js"></script>
+    </head>
+    <body>
+        <svg class="chart">
+        </svg>
+
+        <script type="text/javascript">
+            var margin = {top: 20, right: 30, bottom: 55, left: 50},
+                    width = 960 - margin.left - margin.right,
+                    height = 500 - margin.top - margin.bottom;
+
+            var x = d3.scale.ordinal()
+                    .rangeRoundBands([0, width], .1);
+
+            var y = d3.scale.linear()
+                    .range([height, 0]);
+
+            var chart = d3.select(".chart")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+            d3.csv("data.csv",
+                    function(d) {
+                        return {
+                            student_id : +d["Student ID"],
+                            major : d.Major,
+                            standing : d.Standing,
+                            grade : +d.Grade,
+                            prerequisites : d["Prerequisites?"],
+                            letter : d.Letters
+                        };
+                    },
+                    function (data) { aggregateData(data) }
+            );
+
+            function aggregateData(data) {
+                aggData = [];
+
+                data.forEach(function (d) {
+                    foundMajor = false;
+
+                    aggData.forEach(function (ag, index, theArray) {
+                        if (ag.major == d.major) {
+                            theArray[index].value += 1;
+                            foundMajor = true;
+                        }
+                    });
+
+                    if (!foundMajor) {
+                        aggData.push({major : d.major, value : 1});
+                    }
+
+                });
+
+                aggData.sort(function (a, b) {return a.major > b.major});
+
+                createChart(aggData);
+            }
+
+            function createChart(data) {
+                yRange = d3.max(data, function(d) { return d.value; });
+                x.domain(data.map(function(d) { return d.major; }));
+                y.domain([0, yRange]);
+
+                var barWidth = width / data.length;
+
+                var bar = chart.selectAll("g")
+                        .data(data)
+                        .enter().append("g")
+                        .attr("transform", function(d, i) { return "translate(" + x(d.major) + ",0)"; });
+
+                bar.append("rect")
+                        .attr("y", function(d) { return y(d.value); })
+                        .attr("height", function(d) { return height - y(d.value); })
+                        .attr("width", x.rangeBand());
+
+                bar.append("text")
+                        .attr("x", barWidth / 2)
+                        .attr("y", function(d) { return y(d.value) + 3; })
+                        .attr("dy", ".75em");
+
+                var xAxis = d3.svg.axis()
+                        .scale(x)
+                        .orient("bottom");
+
+                var yAxis = d3.svg.axis()
+                        .scale(y)
+                        .orient("left")
+                        .tickFormat(d3.format("d"));
+
+                chart.append("g")
+                        .attr("class", "x axis")
+                        .attr("transform", "translate(0," + height + ")")
+                        .call(xAxis);
+
+                chart.append("g")
+                        .attr("class", "y axis")
+                        .call(yAxis);
+
+                chart.append("text")
+                        .attr("class", "label_text")
+                        .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
+                        .attr("transform", "translate("+ (margin.left/2) +","+(height/2)+")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
+                        .text("Total Students")
+                        .attr("y", -60);
+
+                chart.append("text")
+                        .attr("class", "label_text")
+                        .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
+                        .attr("transform", "translate("+ (width/2) +","+(height-(margin.bottom/3))+")")  // centre below axis
+                        .text("Major")
+                        .attr("y", 60);
+
+                var numberOfTicks = yRange;
+
+                var yAxisGrid = yAxis.ticks(numberOfTicks)
+                        .tickSize(width, 0)
+                        .tickFormat("")
+                        .orient("right");
+
+                var xAxisGrid = xAxis.ticks(numberOfTicks)
+                        .tickSize(-height, 0)
+                        .tickFormat("")
+                        .orient("top");
+
+                chart.append("g")
+                        .classed('y', true)
+                        .classed('grid', true)
+                        .call(yAxisGrid);
+
+
+            }
+        </script>
+    </body>
+</html>
