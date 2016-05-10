@@ -61,7 +61,6 @@ d3.csv(fileName, function(error, data) {
 
     node.append("title")
         .text(function(d) {
-            console.log(d);
             if (d.hasOwnProperty('children')) {
                 return d.data.name + "\nChildren : " + d.children.length + "\nTotal Impact : " + format(d.value) + "\nAverage Impact : " + round(d.value / d.children.length);
             } else {
