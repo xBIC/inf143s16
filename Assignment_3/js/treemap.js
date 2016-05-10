@@ -49,16 +49,9 @@ function position() {
         .style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; });
 }
 
-function position2(node) {
-    node.style("left", function(d) { return d.x + "px"; })
-        .style("top", function(d) { return d.y + "px"; })
-        .style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
-        .style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; });
-}
-
 function formatData(data) {
     formattedData = {"name" : "CSCW Data", "children" : []};
-    data.forEach(function (d, index) {
+    data.forEach(function (d) {
         for (var key in d) {
             if (d[key] == "" || d[key] == undefined) {
                 continue;
