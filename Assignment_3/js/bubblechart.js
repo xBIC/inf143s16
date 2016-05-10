@@ -1,3 +1,7 @@
+/*
+Code citation: http://bl.ocks.org/mbostock/4063269
+ */
+
 var diameter = 960,
     format = d3.format(",d"),
     color = d3.scale.category20c();

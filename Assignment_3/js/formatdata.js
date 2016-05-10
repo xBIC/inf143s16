@@ -1,5 +1,5 @@
 function formatData(data) {
-    formattedData = {"name" : "CSCW Data", "children" : []};
+    formattedData = {"name" : "Data", "children" : []};
     data.forEach(function (d) {
         for (var key in d) {
             if (d[key] == "" || d[key] == undefined) {
