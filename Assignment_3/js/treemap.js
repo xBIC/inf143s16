@@ -27,7 +27,8 @@ d3.csv(fileName, function(error, root) {
         .attr("class", "node")
         .call(position)
         .style("background", function(d) { return d.children ? color(d.name) : null; })
-        .text(function(d) { return d.children ? null : d.name; });
+        .text(function(d) { return d.children ? null : d.name; })
+        .attr("title", function(d) { return d.name + ' : ' + d.size; });
 
     d3.selectAll("input").on("change", function change() {
         var value = this.value === "count"
@@ -56,7 +57,7 @@ function formatData(data) {
             if (d[key] == "" || d[key] == undefined) {
                 continue;
             }
-            entry = {"name" : d[key] + ' - ' + key, "size" : d[key]};
+            entry = {"name" : key, "size" : d[key]};
 
             pos = schoolArrayPosition(key, formattedData.children);
 
