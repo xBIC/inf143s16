@@ -1,11 +1,12 @@
 var xParam = 'quality';
 var yParam = 'fixed acidity';
 var colorParam = 'wine_type';
-var wineType = 'red';
+var showRed = true;
+var showWhite = true;
 
-var margin = {top: 20, right: 20, bottom: 30, left: 40},
+var margin = {top: 20, right: 20, bottom: 30, left: 60},
     width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+    height = 800 - margin.top - margin.bottom;
 
 var x = d3.scale.linear()
     .range([0, width]);
@@ -23,13 +24,9 @@ var yAxis = d3.svg.axis()
     .scale(y)
     .orient("left");
 
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+var svg;
 
-var loadedData;
+var loadedData = [];
 
 d3.csv("winequality.csv", function(error, data) {
     if (error) throw error;
@@ -37,8 +34,8 @@ d3.csv("winequality.csv", function(error, data) {
     data.forEach(function(d) {
         d['fixed acidity'] = +d['fixed acidity'];
         d['volatile acidity'] = +d['volatile acidity'];
-        d['citric acidity'] = +d['citric acidity'];
-        d['residual sugar'] = +d['redsidual sugar'];
+        d['citric acid'] = +d['citric acid'];
+        d['residual sugar'] = +d['residual sugar'];
         d['chlorides'] = +d['chlorides'];
         d['free sulfur dioxide'] = +d['free sulfur dioxide'];
         d['total sulfur dioxide'] = +d['total sulfur dioxide'];
@@ -51,32 +48,54 @@ d3.csv("winequality.csv", function(error, data) {
 
     loadedData = data;
 
-    setupSvg(data);
+    setupSvg(loadedData);
 
 });
-
-function getActiveParameter()
-{
-    return "fixed acidity";
-}
 
 $('input[type=radio][name=optradio]').change(function() {
     yParam = this.value;
     svg.remove();
     $('svg').remove();
+
+    setupSvg(loadedData);
+});
+
+$('input[type=checkbox][name=redcheckbox]').change(function() {
+    showRed = this.checked;
+    svg.remove();
+    $('svg').remove();
+
+    setupSvg(loadedData);
+});
+
+$('input[type=checkbox][name=whitecheckbox]').change(function() {
+    showWhite = this.checked;
+    svg.remove();
+    $('svg').remove();
+
+    setupSvg(loadedData);
+});
+
+function setupSvg(loadedData)
+{
+    var data = [];
+
+    loadedData.forEach(function(d) {
+        if (d['wine_type'] == 'red' && showRed) {
+            data.push(d);
+        } else if (d['wine_type'] == 'white' && showWhite) {
+            data.push(d);
+        }
+    });
+
+    x.domain([d3.min(data, function(d) { return d[xParam]; }) - 1, d3.max(data, function(d) { return d[xParam]; })]).nice();
+    y.domain(d3.extent(data, function(d) { return d[yParam]; })).nice();
+
     svg = d3.select("body").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    setupSvg(loadedData);
-});
-
-function setupSvg(data)
-{
-    x.domain(d3.extent(data, function(d) { return d[xParam]; })).nice();
-    y.domain(d3.extent(data, function(d) { return d[yParam]; })).nice();
 
     svg.append("g")
         .attr("class", "x axis")
@@ -104,7 +123,7 @@ function setupSvg(data)
         .data(data)
         .enter().append("circle")
         .attr("class", "dot")
-        .attr("r",1)
+        .attr("r", 1.5)
         .attr("cx", function(d) { return x(d[xParam]); })
         .attr("cy", function(d) { return y(d[yParam]); })
         .style("fill", function(d) { return color(d[colorParam]); });

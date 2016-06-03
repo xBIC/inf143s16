@@ -3,16 +3,26 @@
 <link rel="stylesheet" type="text/css" href="style.css">
 <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 <body>
+<p>Select a type of wine to visualize</p>
+<form role="form">
+    <label class="checkbox-inline">
+        <input type="checkbox" name="redcheckbox" checked="checked">Red Wine
+    </label>
+    <label class="checkbox-inline">
+        <input type="checkbox" name="whitecheckbox" checked="checked">White Wine
+    </label>
+</form>
+<br/>
 <p>Select parameter to compare with quality score</p>
 <form role="form">
     <label class="radio-inline">
-        <input type="radio" name="optradio" value="fixed acidity">Fixed Acidity
+        <input type="radio" name="optradio" value="fixed acidity" checked="checked">Fixed Acidity
     </label>
     <label class="radio-inline">
         <input type="radio" name="optradio" value="volatile acidity">Volatile Acidity
     </label>
     <label class="radio-inline">
-        <input type="radio" name="optradio" value="citric acidity">Citric Acidity
+        <input type="radio" name="optradio" value="citric acid">Citric Acid
     </label>
     <label class="radio-inline">
         <input type="radio" name="optradio" value="residual sugar">Residual Sugar
@@ -39,6 +49,7 @@
         <input type="radio" name="optradio" value="alcohol">Alcohol
     </label>
 </form>
+<br/>
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
 <script src="scatterplot.js"></script>
