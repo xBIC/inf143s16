@@ -1,3 +1,8 @@
+/**
+ * Credit to: https://bl.ocks.org/mbostock/3887118
+ * Used as the basis for this scatterplot visualization
+ */
+
 var xParam = 'quality';
 var yParam = 'fixed acidity';
 var colorParam = 'wine_type';
@@ -14,7 +19,8 @@ var x = d3.scale.linear()
 var y = d3.scale.linear()
     .range([height, 0]);
 
-var color = d3.scale.category10();
+//var color = d3.scale.category10();
+var color = d3.scale.ordinal().range(['#D55E00', '#56B4E9']);
 
 var xAxis = d3.svg.axis()
     .scale(x)
@@ -123,10 +129,11 @@ function setupSvg(loadedData)
         .data(data)
         .enter().append("circle")
         .attr("class", "dot")
-        .attr("r", 1.5)
+        .attr("r", 2.5)
         .attr("cx", function(d) { return x(d[xParam]); })
         .attr("cy", function(d) { return y(d[yParam]); })
-        .style("fill", function(d) { return color(d[colorParam]); });
+        .style("fill", function(d) { return color(d[colorParam]); })
+        .style("opacity", .35);
 
     var legend = svg.selectAll(".legend")
         .data(color.domain())
