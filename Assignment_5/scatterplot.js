@@ -14,6 +14,9 @@ var showRed = true;
 var showWhite = true;
 var opacity = .5;
 
+var maxWhite = 1;
+var maxRed = 1;
+
 var margin = {top: 20, right: 20, bottom: 30, left: 60},
     width = 700 - margin.left - margin.right,
     height = 800 - margin.top - margin.bottom;
@@ -25,7 +28,7 @@ var y = d3.scale.linear()
     .range([height, 0]);
 
 //var color = d3.scale.category10();
-var color = d3.scale.ordinal().range(['#56B4E9', '#D55E00']);
+var color = d3.scale.ordinal().range(['#D55E00', '#56B4E9']);
 
 var xAxis = d3.svg.axis()
     .scale(x)
@@ -103,21 +106,21 @@ function setupSvg(loadedData) {
         }
     });
 
-    var maxRed = 1;
-    var maxWhite = 1;
+    maxRed = 1;
+    maxWhite = 1;
 
     data.forEach(function (d) {
         found = false;
         countedData.forEach(function (k) {
-           if (d[yParam] == k[yParam] && d['wine_type'] == k['wine_type'] && d['quality'] == k['quality']) {
-               k['count'] += 1;
-               found = true;
-               if (k['count'] > maxRed && d['wine_type'] == 'red') {
-                   maxRed = k['count'];
-               } else if (k['count'] > maxWhite && d['wine_type'] == 'white') {
-                   maxWhite = k['count'];
-               }
-           }
+            if (d[yParam] == k[yParam] && d['wine_type'] == k['wine_type'] && d['quality'] == k['quality']) {
+                k['count'] += 1;
+                found = true;
+                if (k['count'] > maxRed && d['wine_type'] == 'red') {
+                    maxRed = k['count'];
+                } else if (k['count'] > maxWhite && d['wine_type'] == 'white') {
+                    maxWhite = k['count'];
+                }
+            }
         });
 
         if (!found) {
@@ -126,12 +129,6 @@ function setupSvg(loadedData) {
             countedData.push(toPush);
         }
     });
-
-    function sortByCount(a, b){
-        var aCount = a['count'];
-        var bCount = b['count'];
-        return ((aCount < bCount) ? 1 : ((aCount > bCount) ? -1 : 0));
-    }
 
     countedData.sort(sortByCount);
 
@@ -153,7 +150,7 @@ function setupSvg(loadedData) {
     var tip = d3.tip()
         .attr('class', 'd3-tip')
         .offset([-10, 0])
-        .html(function(d) {
+        .html(function (d) {
             return "<strong>" + yParamPretty + ":</strong> <span style='color:" + color(d[colorParam]) + "'>" + d[yParam] + "</span><br/><strong>Count:</strong> <span style='color:" + color(d[colorParam]) + "'>" + d['count'] + "</span>";
         });
 
@@ -185,18 +182,7 @@ function setupSvg(loadedData) {
         .data(countedData)
         .enter().append("circle")
         .attr("class", "dot")
-        .attr("r", function (d) {
-            if (d['wine_type'] == 'red') {
-                val = (d['count'] / maxRed) * 20;
-            } else if (d['wine_type'] == 'white') {
-                val = (d['count'] / maxWhite) * 20;
-            }
-
-            if (val < 2) {
-                return 2;
-            }
-            return val;
-        })
+        .attr("r", function (d) { return normalizeValue(d, maxWhite, maxRed); })
         .attr("cx", function (d) {
             return x(d[xParam]);
         })
@@ -243,4 +229,23 @@ function setupSvg(loadedData) {
             }
             return d;
         });
+}
+
+function sortByCount(a, b) {
+    var aCount = normalizeValue(a);
+    var bCount = normalizeValue(b);
+    return ((aCount < bCount) ? 1 : ((aCount > bCount) ? -1 : 0));
+}
+
+function normalizeValue(d) {
+    if (d['wine_type'] == 'red') {
+        val = (d['count'] / maxRed) * 25;
+    } else if (d['wine_type'] == 'white') {
+        val = (d['count'] / maxWhite) * 25;
+    }
+
+    if (val < 1.5) {
+        return 1.5;
+    }
+    return val;
 }
