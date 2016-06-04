@@ -5,12 +5,14 @@
 
 var xParam = 'quality';
 var yParam = 'fixed acidity';
+var yParamPretty = 'Fixed Acidity';
 var colorParam = 'wine_type';
 var showRed = true;
 var showWhite = true;
+var opacity = .35;
 
 var margin = {top: 20, right: 20, bottom: 30, left: 60},
-    width = 960 - margin.left - margin.right,
+    width = 700 - margin.left - margin.right,
     height = 800 - margin.top - margin.bottom;
 
 var x = d3.scale.linear()
@@ -60,6 +62,7 @@ d3.csv("winequality.csv", function(error, data) {
 
 $('input[type=radio][name=optradio]').change(function() {
     yParam = this.value;
+    yParamPretty = $(this).parent()[0].innerText;
     svg.remove();
     $('svg').remove();
 
@@ -85,6 +88,8 @@ $('input[type=checkbox][name=whitecheckbox]').change(function() {
 function setupSvg(loadedData)
 {
     var data = [];
+
+    $('#vis_title').html(yParamPretty + ' vs Quality');
 
     loadedData.forEach(function(d) {
         if (d['wine_type'] == 'red' && showRed) {
@@ -133,7 +138,7 @@ function setupSvg(loadedData)
         .attr("cx", function(d) { return x(d[xParam]); })
         .attr("cy", function(d) { return y(d[yParam]); })
         .style("fill", function(d) { return color(d[colorParam]); })
-        .style("opacity", .35);
+        .style("opacity", opacity);
 
     var legend = svg.selectAll(".legend")
         .data(color.domain())
