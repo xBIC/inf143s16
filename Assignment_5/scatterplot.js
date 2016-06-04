@@ -36,10 +36,10 @@ var svg;
 
 var loadedData = [];
 
-d3.csv("winequality.csv", function(error, data) {
+d3.csv("winequality.csv", function (error, data) {
     if (error) throw error;
 
-    data.forEach(function(d) {
+    data.forEach(function (d) {
         d['fixed acidity'] = +d['fixed acidity'];
         d['volatile acidity'] = +d['volatile acidity'];
         d['citric acid'] = +d['citric acid'];
@@ -60,7 +60,7 @@ d3.csv("winequality.csv", function(error, data) {
 
 });
 
-$('input[type=radio][name=optradio]').change(function() {
+$('input[type=radio][name=optradio]').change(function () {
     yParam = this.value;
     yParamPretty = $(this).parent()[0].innerText;
     svg.remove();
@@ -69,7 +69,7 @@ $('input[type=radio][name=optradio]').change(function() {
     setupSvg(loadedData);
 });
 
-$('input[type=checkbox][name=redcheckbox]').change(function() {
+$('input[type=checkbox][name=redcheckbox]').change(function () {
     showRed = this.checked;
     svg.remove();
     $('svg').remove();
@@ -77,7 +77,7 @@ $('input[type=checkbox][name=redcheckbox]').change(function() {
     setupSvg(loadedData);
 });
 
-$('input[type=checkbox][name=whitecheckbox]').change(function() {
+$('input[type=checkbox][name=whitecheckbox]').change(function () {
     showWhite = this.checked;
     svg.remove();
     $('svg').remove();
@@ -85,13 +85,12 @@ $('input[type=checkbox][name=whitecheckbox]').change(function() {
     setupSvg(loadedData);
 });
 
-function setupSvg(loadedData)
-{
+function setupSvg(loadedData) {
     var data = [];
 
     $('#vis_title').html(yParamPretty + ' vs Quality');
 
-    loadedData.forEach(function(d) {
+    loadedData.forEach(function (d) {
         if (d['wine_type'] == 'red' && showRed) {
             data.push(d);
         } else if (d['wine_type'] == 'white' && showWhite) {
@@ -99,8 +98,14 @@ function setupSvg(loadedData)
         }
     });
 
-    x.domain([d3.min(data, function(d) { return d[xParam]; }) - 1, d3.max(data, function(d) { return d[xParam]; })]).nice();
-    y.domain(d3.extent(data, function(d) { return d[yParam]; })).nice();
+    x.domain([d3.min(data, function (d) {
+        return d[xParam];
+    }) - 1, d3.max(data, function (d) {
+        return d[xParam];
+    })]).nice();
+    y.domain(d3.extent(data, function (d) {
+        return d[yParam];
+    })).nice();
 
     svg = d3.select("body").append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -135,16 +140,24 @@ function setupSvg(loadedData)
         .enter().append("circle")
         .attr("class", "dot")
         .attr("r", 2.5)
-        .attr("cx", function(d) { return x(d[xParam]); })
-        .attr("cy", function(d) { return y(d[yParam]); })
-        .style("fill", function(d) { return color(d[colorParam]); })
+        .attr("cx", function (d) {
+            return x(d[xParam]);
+        })
+        .attr("cy", function (d) {
+            return y(d[yParam]);
+        })
+        .style("fill", function (d) {
+            return color(d[colorParam]);
+        })
         .style("opacity", opacity);
 
     var legend = svg.selectAll(".legend")
         .data(color.domain())
         .enter().append("g")
         .attr("class", "legend")
-        .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+        .attr("transform", function (d, i) {
+            return "translate(0," + i * 20 + ")";
+        });
 
     legend.append("rect")
         .attr("x", width - 18)
@@ -157,5 +170,7 @@ function setupSvg(loadedData)
         .attr("y", 9)
         .attr("dy", ".35em")
         .style("text-anchor", "end")
-        .text(function(d) { return d; });
+        .text(function (d) {
+            return d;
+        });
 }
