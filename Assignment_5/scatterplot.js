@@ -1,7 +1,9 @@
 /**
  * Credit to: https://bl.ocks.org/mbostock/3887118
  * Used as the basis for this scatterplot visualization
- * A number of updates and improvements were added
+ *
+ * Credit to: http://bl.ocks.org/Caged/6476579
+ * Used to handle the tooltip popups
  */
 
 var xParam = 'quality';
@@ -23,7 +25,7 @@ var y = d3.scale.linear()
     .range([height, 0]);
 
 //var color = d3.scale.category10();
-var color = d3.scale.ordinal().range(['#D55E00', '#56B4E9']);
+var color = d3.scale.ordinal().range(['#56B4E9', '#D55E00']);
 
 var xAxis = d3.svg.axis()
     .scale(x)
@@ -125,6 +127,14 @@ function setupSvg(loadedData) {
         }
     });
 
+    function sortByCount(a, b){
+        var aCount = a['count'];
+        var bCount = b['count'];
+        return ((aCount < bCount) ? 1 : ((aCount > bCount) ? -1 : 0));
+    }
+
+    countedData.sort(sortByCount);
+
     x.domain([d3.min(countedData, function (d) {
         return d[xParam];
     }) - 1, d3.max(countedData, function (d) {
@@ -139,6 +149,15 @@ function setupSvg(loadedData) {
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var tip = d3.tip()
+        .attr('class', 'd3-tip')
+        .offset([-10, 0])
+        .html(function(d) {
+            return "<strong>" + yParamPretty + ":</strong> <span style='color:" + color(d[colorParam]) + "'>" + d[yParam] + "</span><br/><strong>Count:</strong> <span style='color:" + color(d[colorParam]) + "'>" + d['count'] + "</span>";
+        });
+
+    svg.call(tip);
 
     svg.append("g")
         .attr("class", "x axis")
@@ -173,8 +192,8 @@ function setupSvg(loadedData) {
                 val = (d['count'] / maxWhite) * 20;
             }
 
-            if (val < 2.5) {
-                return 2.5;
+            if (val < 2) {
+                return 2;
             }
             return val;
         })
@@ -190,7 +209,9 @@ function setupSvg(loadedData) {
         .style("fill", function (d) {
             return color(d[colorParam]);
         })
-        .style('fill-opacity', .2);
+        .style('fill-opacity', .2)
+        .on('mouseover', tip.show)
+        .on('mouseout', tip.hide);
 
     var legend = svg.selectAll(".legend")
         .data(color.domain())
