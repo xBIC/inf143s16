@@ -1,6 +1,7 @@
 /**
  * Credit to: https://bl.ocks.org/mbostock/3887118
  * Used as the basis for this scatterplot visualization
+ * A number of updates and improvements were added
  */
 
 var xParam = 'quality';
@@ -9,7 +10,7 @@ var yParamPretty = 'Fixed Acidity';
 var colorParam = 'wine_type';
 var showRed = true;
 var showWhite = true;
-var opacity = .35;
+var opacity = .5;
 
 var margin = {top: 20, right: 20, bottom: 30, left: 60},
     width = 700 - margin.left - margin.right,
@@ -26,7 +27,8 @@ var color = d3.scale.ordinal().range(['#D55E00', '#56B4E9']);
 
 var xAxis = d3.svg.axis()
     .scale(x)
-    .orient("bottom");
+    .orient("bottom")
+    .tickFormat(d3.format("d"));
 
 var yAxis = d3.svg.axis()
     .scale(y)
@@ -87,6 +89,7 @@ $('input[type=checkbox][name=whitecheckbox]').change(function () {
 
 function setupSvg(loadedData) {
     var data = [];
+    var countedData = [];
 
     $('#vis_title').html(yParamPretty + ' vs Quality');
 
@@ -98,12 +101,36 @@ function setupSvg(loadedData) {
         }
     });
 
-    x.domain([d3.min(data, function (d) {
+    var maxRed = 1;
+    var maxWhite = 1;
+
+    data.forEach(function (d) {
+        found = false;
+        countedData.forEach(function (k) {
+           if (d[yParam] == k[yParam] && d['wine_type'] == k['wine_type'] && d['quality'] == k['quality']) {
+               k['count'] += 1;
+               found = true;
+               if (k['count'] > maxRed && d['wine_type'] == 'red') {
+                   maxRed = k['count'];
+               } else if (k['count'] > maxWhite && d['wine_type'] == 'white') {
+                   maxWhite = k['count'];
+               }
+           }
+        });
+
+        if (!found) {
+            toPush = d;
+            toPush['count'] = 1;
+            countedData.push(toPush);
+        }
+    });
+
+    x.domain([d3.min(countedData, function (d) {
         return d[xParam];
-    }) - 1, d3.max(data, function (d) {
+    }) - 1, d3.max(countedData, function (d) {
         return d[xParam];
     })]).nice();
-    y.domain(d3.extent(data, function (d) {
+    y.domain(d3.extent(countedData, function (d) {
         return d[yParam];
     })).nice();
 
@@ -133,23 +160,37 @@ function setupSvg(loadedData) {
         .attr("y", 6)
         .attr("dy", ".71em")
         .style("text-anchor", "end")
-        .text(yParam)
+        .text(yParam);
 
     svg.selectAll(".dot")
-        .data(data)
+        .data(countedData)
         .enter().append("circle")
         .attr("class", "dot")
-        .attr("r", 2.5)
+        .attr("r", function (d) {
+            if (d['wine_type'] == 'red') {
+                val = (d['count'] / maxRed) * 20;
+            } else if (d['wine_type'] == 'white') {
+                val = (d['count'] / maxWhite) * 20;
+            }
+
+            if (val < 2.5) {
+                return 2.5;
+            }
+            return val;
+        })
         .attr("cx", function (d) {
             return x(d[xParam]);
         })
         .attr("cy", function (d) {
             return y(d[yParam]);
         })
+        .style("stroke", function (d) {
+            return color(d[colorParam]);
+        })
         .style("fill", function (d) {
             return color(d[colorParam]);
         })
-        .style("opacity", opacity);
+        .style('fill-opacity', .2);
 
     var legend = svg.selectAll(".legend")
         .data(color.domain())
@@ -159,11 +200,14 @@ function setupSvg(loadedData) {
             return "translate(0," + i * 20 + ")";
         });
 
-    legend.append("rect")
-        .attr("x", width - 18)
-        .attr("width", 18)
-        .attr("height", 18)
-        .style("fill", color);
+    legend.append("circle")
+        .attr("class", "dot")
+        .attr("cx", width - 10)
+        .attr("cy", 10)
+        .attr("r", 9)
+        .style("fill", color)
+        .style("stroke", color)
+        .style("fill-opacity", .2);
 
     legend.append("text")
         .attr("x", width - 24)
@@ -171,6 +215,11 @@ function setupSvg(loadedData) {
         .attr("dy", ".35em")
         .style("text-anchor", "end")
         .text(function (d) {
+            if (d == 'white') {
+                return 'White Wine';
+            } else if (d == 'red') {
+                return 'Red Wine';
+            }
             return d;
         });
 }
